@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Translator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+    <div class="container row">
+        <div class="row">
+
+        </div>
+        <div class="panel input-panel col">
+            <h1>Text To Translator</h1>
+            <form method="post">
+                <textarea name="text" placeholder="Enter text here...">{{ input_text }}</textarea><br><br>
+                <input type="submit" value="Translate">
+            </form>
+        </div>
+        <div class="panel output-panel col">
+
+            <h2>Translated Text</h2>
+            <textarea readonly>{{ translated_text }}</textarea>
+
+        </div>
+    </div>
+</body>
+</html>

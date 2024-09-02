@@ -68,5 +68,3 @@ def process_text_in_chunks(text, chunk_size=512):
         translated_text += translated_chunk
     return translated_text
 
-if __name__ == '__main__':
-    app.run(debug=True)

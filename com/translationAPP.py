@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, render_template
-import torch
+#import torch
 from transformers import pipeline
 
 app = Flask(__name__)
@@ -8,15 +8,15 @@ app = Flask(__name__)
 translator_en_to_de = pipeline(
     "translation_en_to_de",
     model="Helsinki-NLP/opus-mt-en-de",
-    model_kwargs={"torch_dtype": torch.float16},
-    device=0 if torch.cuda.is_available() else -1
+    #model_kwargs={"torch_dtype": torch.float16},
+    #device=0 if torch.cuda.is_available() else -1
 )
 
 translator_de_to_en = pipeline(
     "translation_de_to_en",
     model="Helsinki-NLP/opus-mt-de-en",
-    model_kwargs={"torch_dtype": torch.float16},
-    device=0 if torch.cuda.is_available() else -1
+    #model_kwargs={"torch_dtype": torch.float16},
+    #device=0 if torch.cuda.is_available() else -1
 )
 
 def translate_text(input_text, direction='en_to_de'):

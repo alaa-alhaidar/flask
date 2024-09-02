@@ -59,3 +59,19 @@
             box-shadow: 0 0 50px blue;
         }
     }
+        .rounded-top-right {
+            width: 200px;
+            height: 200px;
+            background-color: 'white';
+            color: blue;
+            padding: 20px;
+            border-radius: 50px 0px 0px 50px; /* Only the upper right corner is rounded */
+        }
+         .rounded-top-left {
+                    width: 200px;
+                    height: 200px;
+                    background-color: 'white';
+                    color: blue;
+                    padding: 20px;
+                    border-radius: 0px 50px 50px 0px; /* Only the upper right corner is rounded */
+                }

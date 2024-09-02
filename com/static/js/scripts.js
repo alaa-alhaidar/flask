@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         if (transcript.toLowerCase().includes('stop')) {
         if (translateBtn) {
-                translateBtn.style.backgroundColor = 'red';
+                translateBtn.style.backgroundColor = 'purple';
                 translateBtn.innerHTML = 'stopped';
                 translationResultElem.textContent = '';
                 recognition.stop();

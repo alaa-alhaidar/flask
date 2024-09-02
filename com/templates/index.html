@@ -31,7 +31,8 @@
                     </div>
            <div class="row">
                 <div class="col-4">
-                    <button class="btn btn-lg btn-primary w-100" type="button" id="start-btn">
+                    <button class="btn btn-lg btn-primary w-100" type="button" id="start-btn"
+                            style="border-radius: 50px 0px 0px 50px;">
                         <h1>Record</h1>
                         <span class="material-symbols-outlined">record_voice_over</span>
                     </button>
@@ -43,7 +44,8 @@
                     </button>
                 </div>
                 <div class="col-4">
-                    <button class="btn btn-lg btn-primary w-100" type="button" id="save-btn" disabled>
+                    <button class="btn btn-lg btn-primary w-100" type="button" id="save-btn"
+                            style="border-radius: 0px 50px 50px 0px;" disabled>
                         <h1>Save</h1>
                         <span class="material-symbols-outlined">file_save</span>
                     </button>
@@ -60,7 +62,8 @@
                     <div class="mb-3" >
                         <h2>Transcript:</h2>
 
-                        <textarea style="height: 80vh;"id="result" name="text" class="form-control" rows="10" cols="50">{{ input_text }}</textarea>
+                        <textarea style="height: 75vh;"id="result" name="text"
+                                  class="form-control rounded-top-right" rows="10" cols="50">{{ input_text }}</textarea>
                     </div>
 
 
@@ -70,15 +73,15 @@
             <!-- Column for translated text -->
             <div class="col-md-6" >
                 <h2>Translation:</h2>
-                <div class ="mb-3 form-control" id="translation-result"
+                <div class ="mb-3 form-control rounded-top-left" id="translation-result"
 
-                     style="border: 1px solid #ccc; padding: 10px; min-height: 150px;  height: 80vh;">
+                     style="  height: 75vh;">
                     {{ translated_text }}
                 </div>
             </div>
              <!-- Translate button -->
                     <div class="d-grid  col-12 mx-auto">
-                         <button class="translate-btn" id="translate-btn" type="submit" style="height: 4vh;"
+                         <button class="translate-btn" id="translate-btn" type="submit" style="height: 3vh; opacity: 0.5;"
                                  class="btn btn-success btn-lg d-grid gap-2 translate-btn" >
                              Translate
                          </button>

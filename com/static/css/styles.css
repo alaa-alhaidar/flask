@@ -53,10 +53,10 @@
             box-shadow: 0 0 5px red;
         }
         50% {
-            box-shadow: 0 0 400px blue;
+            box-shadow: 0 0 50px red;
         }
         100% {
-            box-shadow: 0 0 50px blue;
+            box-shadow: 0 0 5px red;
         }
     }
         .rounded-top-right {

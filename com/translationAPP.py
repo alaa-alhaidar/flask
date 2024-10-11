@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify, render_template
-#import torch
 from transformers import pipeline
 
 app = Flask(__name__)

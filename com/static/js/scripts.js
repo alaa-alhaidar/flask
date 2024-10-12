@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // here if the command matched, perform event
         recognition.onresult = function (event) {
+
             let transcript = '';
             for (let i = event.resultIndex; i < event.results.length; i++) {
                 if (event.results[i].isFinal) {
@@ -39,10 +40,15 @@ document.addEventListener('DOMContentLoaded', function () {
              // Check if the command "Translate" is mentioned
 
         if (transcript.toLowerCase().includes('translate')) {
+        const translateBtn = document.getElementById('translate-btn');
             // Remove the word 'translate' from the resultElem's textContent
             let cleanedText = resultElem.textContent.trim();
             cleanedText = cleanedText.replace(/translate/i, '').trim();
-
+            translateBtn.innerHTML = 'Translating...';
+                    setTimeout(() => {
+                    translateBtn.style.backgroundColor = ''; // Reset to original color
+                    translateBtn.innerHTML = 'Translate';
+                }, 3000);
             // Call the translate function with cleaned text
             triggerTranslateFunction(cleanedText);
         }
@@ -52,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (translateBtn) {
                 translateBtn.style.backgroundColor = 'red';
                 translationResultElem.textContent = '';
-                translateBtn.innerHTML = 'deleted';
+                translateBtn.innerHTML = 'Deleting...';
 
                 // Revert the color back to its original state after 3 seconds
                 setTimeout(() => {
@@ -66,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (transcript.toLowerCase().includes('stop')) {
         if (translateBtn) {
                 translateBtn.style.backgroundColor = 'purple';
-                translateBtn.innerHTML = 'stopped';
+                translateBtn.innerHTML = 'Stopping...';
                 translationResultElem.textContent = '';
                 recognition.stop();
 
@@ -84,12 +90,15 @@ document.addEventListener('DOMContentLoaded', function () {
         const translateBtn = document.getElementById('translate-btn');
          if (translateBtn) {
                 translateBtn.style.backgroundColor = 'yellow';
-                translateBtn.innerHTML = 'saved';
+                translateBtn.style.color = 'black';
+                translateBtn.innerHTML = 'Saving...';
 
                 // Revert the color back to its original state after 3 seconds
                 setTimeout(() => {
                     translateBtn.style.backgroundColor = ''; // Reset to original color
+                    translateBtn.style.color = 'white';
                     translateBtn.innerHTML = 'Translate';
+
                 }, 3000);
             }
                 // Remove the word "save" from the text before saving
@@ -167,11 +176,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const translateBtn = document.getElementById('translate-btn');
             if (translateBtn) {
                 translateBtn.style.backgroundColor = 'green';
-                translateBtn.innerHTML = 'translated';
+                translateBtn.innerHTML = 'Translating...';
                 // Revert the color back to its original state after 3 seconds
                 setTimeout(() => {
                     translateBtn.style.backgroundColor = ''; // Reset to original color
-                    translateBtn.innerHTML = 'translate';
+                    translateBtn.innerHTML = 'Translated';
                 }, 3000);
             }
             fetch('/translate', {

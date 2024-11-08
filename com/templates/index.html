@@ -21,14 +21,17 @@
         <h1>Speech to Text Translation</h1>
         <div class="row" style="height: 90vh;">
             <div>
-                 <!-- Language selection and buttons for speech recognition -->
+                 <form method="POST" action="/">
+                    <!-- Language selection and buttons for speech recognition -->
                     <div class="mb-3 col-1">
                         <label for="language-select" class="form-label">Language:</label>
-                        <select id="language-select" class="form-select">
-                            <option value="en-US">English (US)</option>
-                            <option value="de-DE">German (Germany)</option>
+                        <select id="language-select" name="language" class="form-select">
+                            <option value="en_to_de">English to German</option>
+                            <option value="de_to_en">German to English</option>
                         </select>
                     </div>
+
+                </form>
            <div class="row">
                 <div class="col-4">
                     <button class="btn btn-lg btn-primary w-100" type="button" id="start-btn"

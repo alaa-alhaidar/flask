@@ -6,7 +6,7 @@
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; min-height: 100%; }
-body { font-family: "DM Sans", system-ui, sans-serif; color: var(--ink); background: #17132d; }
+body { font-family: "DM Sans", system-ui, sans-serif; color: var(--ink); background: #17132d; overflow-x: hidden; }
 button, textarea, select { font: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: 0.45; }
@@ -74,15 +74,40 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
     .app-card { min-height: 100vh; padding: 22px 16px 30px; border: 0; border-radius: 0; }
     .app-header { grid-template-columns: auto 1fr; gap: 13px; }
     .brand-mark { width: 44px; height: 44px; border-radius: 13px; }
+    .brand-mark .material-symbols-rounded { font-size: 25px; }
+    .header-copy h1 { font-size: clamp(1.65rem, 8vw, 2.15rem); line-height: 1.08; }
     .status-pill { grid-column: 1/-1; justify-self: start; }
     .subtitle { font-size: .9rem; }
     .control-bar { padding: 14px; gap: 16px; }
     .language-code, .direction-arrow { display: none; }
     .select-row select { min-width: 0; }
     .recording-actions { display: grid; grid-template-columns: 1.3fr 1fr 1fr; }
-    .recording-actions .button { padding: 0 10px; }
-    .text-panel { min-height: 300px; border-radius: 18px; }
+    .recording-actions .button { min-width: 0; min-height: 50px; padding: 0 9px; }
+    .text-panel { min-height: 285px; border-radius: 18px; }
+    .panel-header { padding: 17px 18px 12px; }
+    #result, .translation-output { min-height: 195px; padding: 6px 18px 16px; font-size: 1.05rem; }
+    .panel-footer { min-height: 44px; padding: 10px 18px; }
     .panel-footer .hint, .privacy-note { display: none; }
-    .button-primary { width: 100%; min-width: 0; }
+    .translate-area { position: sticky; bottom: 0; z-index: 5; margin: 12px -4px -18px; padding: 10px 4px 12px; background: linear-gradient(to bottom, rgba(247,246,252,0), rgba(247,246,252,.96) 28%); }
+    .button-primary { width: 100%; min-width: 0; min-height: 56px; }
+}
+@media (max-width: 390px) {
+    .app-card { padding-inline: 12px; }
+    .app-header { margin-bottom: 20px; }
+    .subtitle { display: none; }
+    .status-pill { margin-top: 2px; }
+    .control-bar { padding: 12px; }
+    .select-row { gap: 7px; }
+    .recording-actions { grid-template-columns: repeat(2, 1fr); }
+    .button-record { grid-column: 1/-1; }
+    .workspace { gap: 14px; }
+    .text-panel { min-height: 260px; }
+    #result, .translation-output { min-height: 175px; }
+}
+@media (max-width: 340px) {
+    .app-header { grid-template-columns: 1fr; }
+    .brand-mark { display: none; }
+    .header-copy h1 { font-size: 1.55rem; }
+    .select-row select { font-size: .88rem; }
 }
 @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }

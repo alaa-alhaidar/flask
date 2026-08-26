@@ -28,3 +28,18 @@ With the CLI, use `vercel` for a preview and `vercel --prod` for production.
 Speech recognition is provided by the browser and works best in Chrome or
 Edge. The serverless filesystem is not persistent, so transcripts are saved
 through the browser's download function.
+
+## Features
+
+- English/German live speech transcription and bilingual voice commands
+- Fast DeepL translation with Hugging Face fallback
+- Short-lived translation cache and request rate limiting
+- Local translation history, keyboard shortcut, and installable PWA shell
+- Text-size validation, safe API errors, and security headers
+
+## Tests
+
+```bash
+python -m unittest discover -v
+node --check com/static/js/scripts.js
+```

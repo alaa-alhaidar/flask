@@ -1,0 +1,18 @@
+{
+  "name": "VoiceBridge Speech Translation",
+  "short_name": "VoiceBridge",
+  "description": "English and German speech-to-text translation.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#17132d",
+  "theme_color": "#6557e8",
+  "icons": [
+    {
+      "src": "/static/img/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

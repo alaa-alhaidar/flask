@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#15132b">
+    <meta name="description" content="Fast English and German speech-to-text translation.">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -77,7 +79,14 @@
                 <button class="button button-primary" id="translate-btn" type="button">
                     <span class="material-symbols-rounded">translate</span><span id="translate-label">Translate text</span><span class="material-symbols-rounded arrow-icon">arrow_forward</span>
                 </button>
+                <span class="keyboard-hint">⌘/Ctrl + Enter</span>
             </div>
+
+            <details class="history-card" id="history-card">
+                <summary><span><span class="material-symbols-rounded">history</span> Recent translations</span><span class="history-count" id="history-count">0</span></summary>
+                <div class="history-list" id="history-list"></div>
+                <button class="text-action history-clear" id="clear-history" type="button">Clear history</button>
+            </details>
         </section>
     </main>
 </body>

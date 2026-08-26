@@ -1,8 +1,10 @@
-from com.translationAPP import app
+try:
+    from com.translationAPP import app
+except ModuleNotFoundError:
+    from translationAPP import app
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
 
 
 

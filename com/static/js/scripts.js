@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const translateBtn = document.getElementById('translate-btn');
     const translationResultElem = document.getElementById('translation-result');
     const languageSelect = document.getElementById('language-select');
-    const selectedDirection = languageSelect.value; // Get the selected value
     translationResultElem.textContent = '';
     let recognition;
     let isRecording = false;
@@ -32,11 +31,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (transcript.trim() !== '') {
-            resultElem.textContent += transcript + ', ';
+            resultElem.value += transcript + ', ';
         }
 
-        if (transcript.toLowerCase().includes('translate pleas')) {
-            let cleanedText = resultElem.textContent.trim().replace(/translate/i, '').trim();
+        if (/translate please?/.test(transcript.toLowerCase())) {
+            let cleanedText = resultElem.value.trim().replace(/translate please?/i, '').trim();
             translateBtn.innerHTML = 'Translating...';
             setTimeout(() => {
                 translateBtn.style.backgroundColor = '';
@@ -53,10 +52,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 translateBtn.style.backgroundColor = '';
                 translateBtn.innerHTML = 'Translate';
             }, 3000);
-            resultElem.textContent = '';
+            resultElem.value = '';
         }
 
-        if (transcript.toLowerCase().includes('save pleas')) {
+        if (/save please?/.test(transcript.toLowerCase())) {
             translateBtn.style.backgroundColor = 'yellow';
             translateBtn.style.color = 'black';
             saveBtn.style.backgroundColor = 'yellow';
@@ -67,12 +66,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 translateBtn.style.color = 'white';
                 translateBtn.innerHTML = 'Translate';
             }, 3000);
-            const textToSave = resultElem.textContent.trim().replace(/save$/, '').trim();
+            const textToSave = resultElem.value.trim().replace(/save please?/i, '').trim();
             triggerSaveFunction(textToSave);
         }
 
         // Stop the recognition if the "stop" command is detected
-        if (transcript.toLowerCase().includes('stop pleas')) {
+        if (/stop please?/.test(transcript.toLowerCase())) {
         if (translateBtn) {
                 translateBtn.style.backgroundColor = 'red';
                 stopBtn.style.backgroundColor = 'red';
@@ -93,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }, 3000);
             }
             // Clear the text in resultElem
-            resultElem.textContent = '';
+            resultElem.value = '';
             translationResultElem.textContent = '';
             recognition.stop(); // Stop the recording
             //alert("Recording stopped. Exiting system."); // Optional alert for confirmation
@@ -133,10 +132,10 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     startBtn.addEventListener('click', function () {
-        recognition.lang = languageSelect.value;
+        recognition.lang = languageSelect.value === 'de_to_en' ? 'de-DE' : 'en-US';
         isRecording = true;
         recognition.start();
-        resultElem.textContent = '';
+        resultElem.value = '';
 
         // Make start button red when recording starts
         startBtn.style.backgroundColor = 'red';
@@ -148,8 +147,15 @@ document.addEventListener('DOMContentLoaded', function () {
         stopRecording();
     });
 
+    translateBtn.addEventListener('click', function () {
+        const text = resultElem.value.trim();
+        if (text) {
+            triggerTranslateFunction(text);
+        }
+    });
+
     saveBtn.addEventListener('click', function () {
-        const textToSave = resultElem.textContent.trim();
+        const textToSave = resultElem.value.trim();
         if (textToSave === '') {
             alert('Nothing to save!');
             return;
@@ -172,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Reset start button color after stopping
         startBtn.style.backgroundColor = '';
-        resultElem.textContent = resultElem.textContent.trim().slice(0, -1) + '.';
+        resultElem.value = resultElem.value.trim().replace(/,$/, '') + '.';
         startBtn.classList.remove('recording');
         translateBtn.classList.remove('recording');
     }
@@ -188,13 +194,21 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch('/translate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: text, direction: 'en_to_de' })
+            body: JSON.stringify({ text: text, direction: languageSelect.value })
         })
-        .then(response => response.json())
+        .then(async response => {
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Translation failed');
+            return data;
+        })
         .then(data => {
             translationResultElem.textContent = data.translated_text;
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            translationResultElem.textContent = error.message;
+            translateBtn.style.backgroundColor = '';
+            translateBtn.innerHTML = 'Translate';
+        });
     }
 
     function saveFile(text) {

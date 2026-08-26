@@ -1,77 +1,198 @@
 /* static/css/styles.css */
+html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    font-family: 'Open Sans', sans-serif;
+}
+
+body {
+    background: #eaf4ff;
+}
+
 .bkg {
-    background-image: url('../img/img2.jpg'); /* Relative path from CSS to image */
-    background-size: cover; /* Cover the entire div */
-    background-position: center; /* Center the image */
+    background-image: url('../img/img2.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
 }
+
 .full-height {
-    height: 100vh; /* 100% of the viewport height */
-    background-color: lightblue; /* Just for demonstration */
+    min-height: 100vh;
+    background-color: rgba(173, 216, 230, 0.7);
 }
 
+.app-shell {
+    padding: 24px 16px 40px;
+}
 
-        #result {
-            font-size: 2rem; /* Adjust this value to make the font bigger */
-            height: 200px; /* Adjust this value if needed */
-            width: 100%;
-        }
+.app-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.75);
+    border-radius: 24px;
+    padding: 20px 18px 18px;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
 
-        #translation-result {
-            font-size: 2rem; /* Adjust this value to make the font bigger */
-            border: 1px solid #ccc;
-            padding: 10px;
-            height: 200px; /* Adjust this value if needed */
-            width: 100%;
-            overflow-y: auto; /* Adds scroll if text overflows */
-        }
+.page-title {
+    margin-bottom: 20px;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    text-align: center;
+    font-weight: 700;
+}
 
-        /* Adjust button font size */
-        .btn {
-            font-size: 1rem; /* Adjust this value to make the button text bigger */
-        }
+.controls-panel {
+    margin-bottom: 20px;
+}
+
+.language-form {
+    margin-bottom: 14px;
+}
+
+.language-block {
+    max-width: 420px;
+    margin: 0 auto;
+}
+
+.language-select {
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 1rem;
+}
+
+.recording-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0 auto;
+}
+
+.recording-col {
+    min-width: 0;
+}
+
+.action-btn {
+    min-height: 110px;
+    font-size: 1.1rem;
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    text-transform: none;
+}
+
+.action-btn h2 {
+    margin: 0;
+    font-size: clamp(1.1rem, 2vw, 2rem);
+}
+
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    align-items: start;
+}
+
+.result-column h2 {
+    margin-bottom: 10px;
+    font-size: clamp(1.2rem, 2vw, 1.8rem);
+}
+
+.output-box {
+    width: 100%;
+    min-height: 260px;
+    max-height: 52vh;
+    overflow-y: auto;
+    border-radius: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+#result {
+    font-size: clamp(1rem, 2vw, 1.7rem);
+    padding: 16px;
+    resize: vertical;
+}
+
+#translation-result {
+    font-size: clamp(1rem, 2vw, 1.7rem);
+    padding: 16px;
+    white-space: pre-wrap;
+}
+
+.translate-wrap {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.translate-btn {
+    width: min(100%, 420px);
+    background-color: #0d6efd;
+    color: white;
+    font-size: clamp(1.1rem, 2vw, 2rem);
+    padding: 12px 24px;
+    border-radius: 18px;
+    transition: all 0.3s ease;
+    opacity: 0.95;
+    border: none;
+}
+
+#start-btn.recording {
+    background-color: red;
+    animation: pulse 3s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 5px red;
+    }
+    50% {
+        box-shadow: 0 0 35px red;
+    }
+    100% {
+        box-shadow: 0 0 5px red;
+    }
+}
+
+@media (max-width: 767px) {
+    .app-shell {
+        padding: 12px 10px 24px;
+    }
+
+    .app-inner {
+        padding: 16px 12px 14px;
+        border-radius: 18px;
+    }
+
+    .recording-row {
+        grid-template-columns: 1fr;
+    }
+
+    .action-btn {
+        min-height: 80px;
+        border-radius: 16px !important;
+    }
+
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .output-box {
+        min-height: 220px;
+        max-height: 38vh;
+    }
+
+    .page-title {
+        margin-bottom: 16px;
+    }
 
     .translate-btn {
-    background-color: blue;
-    color: white;
-    font-size: 40px;
-    padding: 10px 20px;
-    border-radius: 50px;
-    transition: all 0.3s ease;
+        width: 100%;
+    }
 }
-
-
-    /* Recording effect style */
-    #start-btn.recording {
-        background-color: red; /* Change to red when recording */
-        animation: pulse 3s infinite; /* Add a pulsing animation */
-    }
-
-
-    /* Pulsing animation */
-    @keyframes pulse {
-        0% {
-            box-shadow: 0 0 5px red;
-        }
-        50% {
-            box-shadow: 0 0 50px red;
-        }
-        100% {
-            box-shadow: 0 0 5px red;
-        }
-    }
-        .rounded-top-right {
-            width: 200px;
-            height: 200px;
-            background-color: 'white';
-            color: blue;
-            padding: 20px;
-            border-radius: 50px 0px 0px 50px; /* Only the upper right corner is rounded */
-        }
-         .rounded-top-left {
-                    width: 200px;
-                    height: 200px;
-                    background-color: 'white';
-                    color: blue;
-                    padding: 20px;
-                    border-radius: 0px 50px 50px 0px; /* Only the upper right corner is rounded */
-                }

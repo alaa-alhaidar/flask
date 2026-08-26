@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "flask",
+  "functions": {
+    "app.py": {
+      "excludeFiles": "{com/elevator*.py,com/data_layout.py,com/static/js/temp.js,translated.txt}"
+    }
+  }
+}

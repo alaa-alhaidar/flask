@@ -5,11 +5,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let isRecording = false;
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const voiceCommands = [
-        { name: 'translate', pattern: /translate(?:\s+pleas(?:e)?)?|übersetzen(?:\s+bitte)?|übersetze(?:\s+bitte)?/iu },
-        { name: 'delete', pattern: /(?:delete|clear)(?:\s+pleas(?:e)?)?|löschen(?:\s+bitte)?|loeschen(?:\s+bitte)?/iu },
-        { name: 'stop', pattern: /stop(?:\s+pleas(?:e)?)?|stopp(?:\s+bitte)?|anhalten(?:\s+bitte)?/iu },
-        { name: 'save', pattern: /save(?:\s+pleas(?:e)?)?|speichern(?:\s+bitte)?/iu },
-        { name: 'start', pattern: /start(?:\s+pleas(?:e)?)?|starte(?:\s+bitte)?/iu }
+        { name: 'translate', pattern: /\b(?:translate|translation|uebersetze|uebersetzen)\b|(?:übersetze|übersetzen)/iu },
+        { name: 'delete', pattern: /\b(?:delete|clear|leeren|loesche|loeschen)\b|(?:lösche|löschen)/iu },
+        { name: 'stop', pattern: /\b(?:stop|stopp|anhalten|beenden)\b/iu },
+        { name: 'save', pattern: /\b(?:save|download|speichere|speichern)\b/iu },
+        { name: 'start', pattern: /\b(?:start|record|starte|aufnahme)\b/iu }
     ];
 
     const setStatus = (text, recording = false) => { el.statusText.textContent = text; el.status.classList.toggle('recording', recording); };
@@ -23,7 +23,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const readVoiceCommand = (transcript) => {
         for (const command of voiceCommands) {
             if (command.pattern.test(transcript)) {
-                return { name: command.name, remainingText: transcript.replace(command.pattern, '').trim() };
+                const remainingText = transcript
+                    .replace(command.pattern, '')
+                    .replace(/\b(?:please|pleas|bitte)\b/giu, '')
+                    .replace(/\s{2,}/g, ' ')
+                    .trim();
+                return { name: command.name, remainingText };
             }
         }
         return null;

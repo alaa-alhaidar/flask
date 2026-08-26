@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const el = { start: $('start-btn'), stop: $('stop-btn'), save: $('save-btn'), translate: $('translate-btn'), translateLabel: $('translate-label'), result: $('result'), output: $('translation-result'), language: $('language-select'), status: $('app-status'), statusText: $('status-text'), charCount: $('char-count'), sourceCode: $('source-code'), targetCode: $('target-code'), sourceLanguage: $('source-language'), targetLanguage: $('target-language') };
     let recognition = null;
     let isRecording = false;
+    let interimPreview = '';
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const voiceCommands = [
         { name: 'translate', pattern: /\b(?:translate|translation|uebersetze|uebersetzen)\b|(?:übersetze|übersetzen)/iu },
@@ -18,7 +19,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const germanSource = el.language.value === 'de_to_en';
         el.sourceCode.textContent = germanSource ? 'DE' : 'EN'; el.targetCode.textContent = germanSource ? 'EN' : 'DE';
         el.sourceLanguage.textContent = germanSource ? 'German' : 'English'; el.targetLanguage.textContent = germanSource ? 'English' : 'German';
+        el.result.lang = germanSource ? 'de' : 'en';
+        el.output.lang = germanSource ? 'en' : 'de';
         el.result.placeholder = germanSource ? 'Aufnahme starten oder deutschen Text eingeben…' : 'Start recording or type something here…';
+    };
+    const recognitionLanguage = () => el.language.value === 'de_to_en' ? 'de-DE' : 'en-US';
+    const applyLanguageChange = () => {
+        updateLanguages();
+        if (!recognition) return;
+        recognition.lang = recognitionLanguage();
+        if (isRecording) {
+            setStatus(el.language.value === 'de_to_en' ? 'Deutsch wird erkannt…' : 'Listening…', true);
+            recognition.stop();
+        }
     };
     const readVoiceCommand = (transcript) => {
         for (const command of voiceCommands) {
@@ -39,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
         el.result.value += `${separator}${text.trim()} `;
         updateCount();
     };
-    const stopRecording = () => { if (!recognition || !isRecording) return; isRecording = false; recognition.stop(); el.start.disabled = false; el.stop.disabled = true; setStatus('Ready'); };
+    const stopRecording = () => { if (!recognition || !isRecording) return; isRecording = false; interimPreview = ''; recognition.stop(); el.start.disabled = false; el.stop.disabled = true; setStatus('Ready'); };
     const downloadTranscript = () => {
         const text = el.result.value.trim(); if (!text) return;
         const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
@@ -61,13 +74,39 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     if (Recognition) {
-        recognition = new Recognition(); recognition.continuous = true; recognition.interimResults = false;
+        recognition = new Recognition(); recognition.continuous = true; recognition.interimResults = true; recognition.lang = recognitionLanguage();
         recognition.onresult = (event) => {
-            let transcript = ''; for (let i = event.resultIndex; i < event.results.length; i += 1) if (event.results[i].isFinal) transcript += event.results[i][0].transcript;
+            if (interimPreview && el.result.value.endsWith(interimPreview)) {
+                el.result.value = el.result.value.slice(0, -interimPreview.length);
+            }
+            interimPreview = '';
+
+            let transcript = '';
+            let interimText = '';
+            for (let i = event.resultIndex; i < event.results.length; i += 1) {
+                if (event.results[i].isFinal) transcript += event.results[i][0].transcript;
+                else interimText += event.results[i][0].transcript;
+            }
+
+            const showInterimText = () => {
+                if (!interimText) return;
+                const separator = el.result.value && !el.result.value.endsWith(' ') ? ' ' : '';
+                interimPreview = `${separator}${interimText}`;
+                el.result.value += interimPreview;
+                updateCount();
+                setStatus(el.language.value === 'de_to_en' ? 'Deutsch wird erkannt…' : 'Listening…', true);
+            };
+
+            if (!transcript) {
+                showInterimText();
+                return;
+            }
+
             const command = readVoiceCommand(transcript);
 
             if (!command) {
                 appendTranscript(transcript);
+                showInterimText();
                 return;
             }
 
@@ -104,9 +143,9 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     } else { el.start.disabled = true; el.start.title = 'Speech recognition is not supported in this browser'; setStatus('Text mode'); }
 
-    el.start.addEventListener('click', () => { recognition.lang = el.language.value === 'de_to_en' ? 'de-DE' : 'en-US'; isRecording = true; recognition.start(); el.start.disabled = true; el.stop.disabled = false; setStatus('Listening…', true); });
-    el.stop.addEventListener('click', stopRecording); el.save.addEventListener('click', downloadTranscript); el.translate.addEventListener('click', translateText); el.result.addEventListener('input', updateCount); el.language.addEventListener('change', updateLanguages);
-    $('swap-btn').addEventListener('click', () => { el.language.value = el.language.value === 'en_to_de' ? 'de_to_en' : 'en_to_de'; updateLanguages(); });
+    el.start.addEventListener('click', () => { recognition.lang = recognitionLanguage(); isRecording = true; recognition.start(); el.start.disabled = true; el.stop.disabled = false; setStatus(el.language.value === 'de_to_en' ? 'Deutsch wird erkannt…' : 'Listening…', true); });
+    el.stop.addEventListener('click', stopRecording); el.save.addEventListener('click', downloadTranscript); el.translate.addEventListener('click', translateText); el.result.addEventListener('input', updateCount); el.language.addEventListener('change', applyLanguageChange);
+    $('swap-btn').addEventListener('click', () => { el.language.value = el.language.value === 'en_to_de' ? 'de_to_en' : 'en_to_de'; applyLanguageChange(); });
     $('clear-transcript').addEventListener('click', () => { el.result.value = ''; el.output.textContent = ''; updateCount(); el.result.focus(); });
     $('copy-translation').addEventListener('click', async () => { const text = el.output.textContent.trim(); if (!text) return; await navigator.clipboard.writeText(text); setStatus('Copied to clipboard'); });
     updateLanguages(); updateCount();

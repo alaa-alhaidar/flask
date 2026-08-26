@@ -1,4 +1,7 @@
 import os
+import json
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 from flask import Flask, request, jsonify, render_template
 from huggingface_hub import InferenceClient
@@ -10,6 +13,38 @@ MODELS = {
     'en_to_de': 'Helsinki-NLP/opus-mt-en-de',
     'de_to_en': 'Helsinki-NLP/opus-mt-de-en',
 }
+DEEPL_LANGUAGES = {
+    'en_to_de': ('EN', 'DE'),
+    'de_to_en': ('DE', 'EN-US'),
+}
+
+
+def _translate_with_deepl(input_text, direction):
+    api_key = os.environ.get('DEEPL_API_KEY')
+    if not api_key:
+        raise RuntimeError('DEEPL_API_KEY is not configured')
+
+    source_lang, target_lang = DEEPL_LANGUAGES[direction]
+    default_host = 'https://api-free.deepl.com' if api_key.endswith(':fx') else 'https://api.deepl.com'
+    api_url = os.environ.get('DEEPL_API_URL', f'{default_host}/v2/translate')
+    payload = json.dumps({
+        'text': [str(input_text)],
+        'source_lang': source_lang,
+        'target_lang': target_lang,
+    }).encode('utf-8')
+    request_data = Request(
+        api_url,
+        data=payload,
+        headers={
+            'Authorization': f'DeepL-Auth-Key {api_key}',
+            'Content-Type': 'application/json',
+            'User-Agent': 'VoiceBridge/1.0',
+        },
+        method='POST',
+    )
+    with urlopen(request_data, timeout=8) as response:
+        result = json.loads(response.read().decode('utf-8'))
+    return result['translations'][0]['text']
 
 
 def _get_client():
@@ -27,6 +62,11 @@ def translate_text(input_text, direction='en_to_de'):
         model = MODELS.get(direction)
         if model is None:
             raise ValueError('Invalid translation direction')
+        if os.environ.get('DEEPL_API_KEY'):
+            try:
+                return _translate_with_deepl(input_text, direction)
+            except (HTTPError, URLError, TimeoutError, KeyError, IndexError, json.JSONDecodeError):
+                pass
         return _get_client().translation(str(input_text), model=model).translation_text
     except ValueError:
         return "Invalid translation direction"
@@ -34,12 +74,15 @@ def translate_text(input_text, direction='en_to_de'):
         return f"Translation error: {exc}"
 
 
-def process_text_in_chunks(text, direction='en_to_de', chunk_size=500):
+def process_text_in_chunks(text, direction='en_to_de', chunk_size=None):
     if text is None or not str(text).strip():
         return ""
 
     if direction not in {'en_to_de', 'de_to_en'}:
         return "Invalid translation direction"
+
+    if chunk_size is None:
+        chunk_size = 10000 if os.environ.get('DEEPL_API_KEY') else 500
 
     translated_chunks = []
     for i in range(0, len(text), chunk_size):
@@ -82,4 +125,3 @@ def save_transcript():
         'success': False,
         'error': 'Serverless storage is not persistent. Use the browser download instead.',
     }), 501
-

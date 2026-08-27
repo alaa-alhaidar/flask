@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const el = { start: $('start-btn'), stop: $('stop-btn'), save: $('save-btn'), translate: $('translate-btn'), translateLabel: $('translate-label'), result: $('result'), output: $('translation-result'), language: $('language-select'), status: $('app-status'), statusText: $('status-text'), charCount: $('char-count'), sourceCode: $('source-code'), targetCode: $('target-code'), sourceLanguage: $('source-language'), targetLanguage: $('target-language'), speak: $('speak-translation'), speakLabel: $('speak-label'), historyCard: $('history-card'), historyList: $('history-list'), historyCount: $('history-count') };
     let recognition = null;
     let isRecording = false;
+    let speechPlaybackActive = false;
+    let pendingSpeechPlayback = null;
     let interimPreview = '';
     const HISTORY_KEY = 'voicebridge-history-v1';
     const MAX_HISTORY = 5;
@@ -24,6 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const stopSpeaking = () => {
         if (!speechSynthesisSupported) return;
+        speechPlaybackActive = false;
+        pendingSpeechPlayback = null;
         window.speechSynthesis.cancel();
         el.speak.classList.remove('speaking');
         el.speak.querySelector('.material-symbols-rounded').textContent = 'volume_up';
@@ -32,9 +36,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const speakTranslation = () => {
         const text = el.output.textContent.trim();
         if (!speechSynthesisSupported || !text) return;
-        if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+        if (speechPlaybackActive || window.speechSynthesis.speaking || window.speechSynthesis.pending) {
             stopSpeaking();
             setStatus('Playback stopped');
+            if (isRecording && recognition) {
+                window.setTimeout(() => {
+                    try { recognition.start(); } catch (error) { console.debug('Recognition resume pending', error); }
+                }, 150);
+            }
             return;
         }
         const language = el.language.value === 'de_to_en' ? 'en-US' : 'de-DE';
@@ -44,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
         utterance.voice = voices.find((voice) => voice.lang === language)
             || voices.find((voice) => voice.lang.toLowerCase().startsWith(language.slice(0, 2).toLowerCase()))
             || null;
+        const beginPlayback = () => window.speechSynthesis.speak(utterance);
         utterance.onstart = () => {
             el.speak.classList.add('speaking');
             el.speak.querySelector('.material-symbols-rounded').textContent = 'stop_circle';
@@ -51,14 +61,29 @@ document.addEventListener('DOMContentLoaded', () => {
             setStatus('Reading translation aloud');
         };
         const finishSpeaking = () => {
+            speechPlaybackActive = false;
             el.speak.classList.remove('speaking');
             el.speak.querySelector('.material-symbols-rounded').textContent = 'volume_up';
             el.speakLabel.textContent = 'Listen';
             setStatus(isRecording ? 'Listening…' : 'Ready', isRecording);
+            if (isRecording && recognition) {
+                window.setTimeout(() => {
+                    try { recognition.start(); } catch (error) { console.debug('Recognition resume pending', error); }
+                }, 150);
+            }
         };
         utterance.onend = finishSpeaking;
         utterance.onerror = finishSpeaking;
-        window.speechSynthesis.speak(utterance);
+        speechPlaybackActive = true;
+        if (isRecording && recognition) {
+            pendingSpeechPlayback = beginPlayback;
+            setStatus('Pausing microphone for playback');
+            try { recognition.stop(); }
+            catch (error) {
+                pendingSpeechPlayback = null;
+                beginPlayback();
+            }
+        } else beginPlayback();
     };
     const updateCount = () => {
         const count = el.result.value.length;
@@ -142,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         el.result.value += `${separator}${text.trim()} `;
         updateCount();
     };
-    const stopRecording = () => { if (!recognition || !isRecording) return; isRecording = false; interimPreview = ''; recognition.stop(); el.start.disabled = false; el.stop.disabled = true; setStatus('Ready'); };
+    const stopRecording = () => { if (!recognition || !isRecording) return; isRecording = false; interimPreview = ''; stopSpeaking(); try { recognition.stop(); } catch (error) { console.debug('Recognition already stopped', error); } el.start.disabled = false; el.stop.disabled = true; setStatus('Ready'); };
     const downloadTranscript = () => {
         const text = el.result.value.trim(); if (!text) return;
         const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
@@ -169,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (Recognition) {
         recognition = new Recognition(); recognition.continuous = true; recognition.interimResults = true; recognition.lang = recognitionLanguage();
         recognition.onresult = (event) => {
+            if (speechPlaybackActive) return;
             if (interimPreview && el.result.value.endsWith(interimPreview)) {
                 el.result.value = el.result.value.slice(0, -interimPreview.length);
             }
@@ -227,6 +253,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
         recognition.onend = () => {
+            if (speechPlaybackActive) {
+                if (pendingSpeechPlayback) {
+                    const beginPlayback = pendingSpeechPlayback;
+                    pendingSpeechPlayback = null;
+                    beginPlayback();
+                }
+                return;
+            }
             if (isRecording) {
                 window.setTimeout(() => {
                     try { recognition.start(); } catch (error) { console.debug('Recognition restart pending', error); }

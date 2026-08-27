@@ -1,4 +1,4 @@
-const CACHE_NAME = 'voicebridge-v3';
+const CACHE_NAME = 'voicebridge-v4';
 const APP_SHELL = [
     '/',
     '/static/css/styles.css',

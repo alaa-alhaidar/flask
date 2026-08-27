@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let recognition = null;
     let isRecording = false;
     let speechPlaybackActive = false;
-    let pendingSpeechPlayback = null;
+    let activeUtterance = null;
     let interimPreview = '';
     const HISTORY_KEY = 'voicebridge-history-v1';
     const MAX_HISTORY = 5;
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const stopSpeaking = () => {
         if (!speechSynthesisSupported) return;
         speechPlaybackActive = false;
-        pendingSpeechPlayback = null;
+        activeUtterance = null;
         window.speechSynthesis.cancel();
         el.speak.classList.remove('speaking');
         el.speak.querySelector('.material-symbols-rounded').textContent = 'volume_up';
@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const language = el.language.value === 'de_to_en' ? 'en-US' : 'de-DE';
         const utterance = new SpeechSynthesisUtterance(text);
+        activeUtterance = utterance;
         utterance.lang = language;
         const voices = window.speechSynthesis.getVoices();
         utterance.voice = voices.find((voice) => voice.lang === language)
@@ -61,7 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
             setStatus('Reading translation aloud');
         };
         const finishSpeaking = () => {
+            if (!speechPlaybackActive) return;
             speechPlaybackActive = false;
+            activeUtterance = null;
             el.speak.classList.remove('speaking');
             el.speak.querySelector('.material-symbols-rounded').textContent = 'volume_up';
             el.speakLabel.textContent = 'Listen';
@@ -76,14 +79,13 @@ document.addEventListener('DOMContentLoaded', () => {
         utterance.onerror = finishSpeaking;
         speechPlaybackActive = true;
         if (isRecording && recognition) {
-            pendingSpeechPlayback = beginPlayback;
             setStatus('Pausing microphone for playback');
-            try { recognition.stop(); }
-            catch (error) {
-                pendingSpeechPlayback = null;
-                beginPlayback();
-            }
-        } else beginPlayback();
+            try { recognition.abort(); }
+            catch (error) { console.debug('Recognition already stopped', error); }
+        }
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.resume();
+        beginPlayback();
     };
     const updateCount = () => {
         const count = el.result.value.length;
@@ -253,14 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
         recognition.onend = () => {
-            if (speechPlaybackActive) {
-                if (pendingSpeechPlayback) {
-                    const beginPlayback = pendingSpeechPlayback;
-                    pendingSpeechPlayback = null;
-                    beginPlayback();
-                }
-                return;
-            }
+            if (speechPlaybackActive) return;
             if (isRecording) {
                 window.setTimeout(() => {
                     try { recognition.start(); } catch (error) { console.debug('Recognition restart pending', error); }

@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const $ = (id) => document.getElementById(id);
-    const el = { start: $('start-btn'), stop: $('stop-btn'), save: $('save-btn'), translate: $('translate-btn'), translateLabel: $('translate-label'), result: $('result'), output: $('translation-result'), language: $('language-select'), status: $('app-status'), statusText: $('status-text'), charCount: $('char-count'), sourceCode: $('source-code'), targetCode: $('target-code'), sourceLanguage: $('source-language'), targetLanguage: $('target-language'), historyCard: $('history-card'), historyList: $('history-list'), historyCount: $('history-count') };
+    const el = { start: $('start-btn'), stop: $('stop-btn'), save: $('save-btn'), translate: $('translate-btn'), translateLabel: $('translate-label'), result: $('result'), output: $('translation-result'), language: $('language-select'), status: $('app-status'), statusText: $('status-text'), charCount: $('char-count'), sourceCode: $('source-code'), targetCode: $('target-code'), sourceLanguage: $('source-language'), targetLanguage: $('target-language'), speak: $('speak-translation'), speakLabel: $('speak-label'), historyCard: $('history-card'), historyList: $('history-list'), historyCount: $('history-count') };
     let recognition = null;
     let isRecording = false;
     let interimPreview = '';
@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const MAX_HISTORY = 5;
     const MAX_TEXT_LENGTH = 10000;
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const speechSynthesisSupported = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
     const voiceCommands = [
         { name: 'translate', pattern: /\b(?:translate|translation|uebersetze|uebersetzen)\b|(?:übersetze|übersetzen)/iu },
         { name: 'delete', pattern: /\b(?:delete|clear|leeren|loesche|loeschen)\b|(?:lösche|löschen)/iu },
@@ -17,6 +18,47 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     const setStatus = (text, recording = false) => { el.statusText.textContent = text; el.status.classList.toggle('recording', recording); };
+    const updateSpeakButton = () => {
+        el.speak.disabled = !speechSynthesisSupported || !el.output.textContent.trim();
+    };
+    const stopSpeaking = () => {
+        if (!speechSynthesisSupported) return;
+        window.speechSynthesis.cancel();
+        el.speak.classList.remove('speaking');
+        el.speak.querySelector('.material-symbols-rounded').textContent = 'volume_up';
+        el.speakLabel.textContent = 'Listen';
+    };
+    const speakTranslation = () => {
+        const text = el.output.textContent.trim();
+        if (!speechSynthesisSupported || !text) return;
+        if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+            stopSpeaking();
+            setStatus('Playback stopped');
+            return;
+        }
+        const language = el.language.value === 'de_to_en' ? 'en-US' : 'de-DE';
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = language;
+        const voices = window.speechSynthesis.getVoices();
+        utterance.voice = voices.find((voice) => voice.lang === language)
+            || voices.find((voice) => voice.lang.toLowerCase().startsWith(language.slice(0, 2).toLowerCase()))
+            || null;
+        utterance.onstart = () => {
+            el.speak.classList.add('speaking');
+            el.speak.querySelector('.material-symbols-rounded').textContent = 'stop_circle';
+            el.speakLabel.textContent = 'Stop';
+            setStatus('Reading translation aloud');
+        };
+        const finishSpeaking = () => {
+            el.speak.classList.remove('speaking');
+            el.speak.querySelector('.material-symbols-rounded').textContent = 'volume_up';
+            el.speakLabel.textContent = 'Listen';
+            setStatus(isRecording ? 'Listening…' : 'Ready', isRecording);
+        };
+        utterance.onend = finishSpeaking;
+        utterance.onerror = finishSpeaking;
+        window.speechSynthesis.speak(utterance);
+    };
     const updateCount = () => {
         const count = el.result.value.length;
         el.charCount.textContent = `${count.toLocaleString()} / ${MAX_TEXT_LENGTH.toLocaleString()}`;
@@ -48,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 applyLanguageChange();
                 el.result.value = item.source;
                 el.output.textContent = item.translation;
+                updateSpeakButton();
                 updateCount();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
@@ -70,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const recognitionLanguage = () => el.language.value === 'de_to_en' ? 'de-DE' : 'en-US';
     const applyLanguageChange = () => {
+        stopSpeaking();
         updateLanguages();
         if (!recognition) return;
         recognition.lang = recognitionLanguage();
@@ -112,8 +156,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, direction: el.language.value }) });
             const data = await response.json(); if (!response.ok) throw new Error(data.error || 'Translation failed');
             el.output.textContent = data.translated_text;
+            updateSpeakButton();
             addToHistory(text, data.translated_text, el.language.value);
-        } catch (error) { el.output.textContent = error.message; setStatus('Translation failed'); }
+        } catch (error) { el.output.textContent = error.message; updateSpeakButton(); setStatus('Translation failed'); }
         finally {
             el.translate.classList.remove('loading'); el.translateLabel.textContent = 'Translate text'; el.translate.querySelector('.arrow-icon').textContent = 'arrow_forward';
             setStatus(isRecording ? 'Listening…' : 'Ready', isRecording);
@@ -161,8 +206,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 appendTranscript(command.remainingText);
                 translateText();
             } else if (command.name === 'delete') {
+                stopSpeaking();
                 el.result.value = '';
                 el.output.textContent = '';
+                updateSpeakButton();
                 updateCount();
                 setStatus(isRecording ? 'Listening…' : 'Ready', isRecording);
             } else if (command.name === 'stop') {
@@ -197,14 +244,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const translation = el.output.textContent.trim();
         el.language.value = el.language.value === 'en_to_de' ? 'de_to_en' : 'en_to_de';
         if (translation) { el.result.value = translation; el.output.textContent = source; }
+        updateSpeakButton();
         applyLanguageChange(); updateCount();
     });
-    $('clear-transcript').addEventListener('click', () => { el.result.value = ''; el.output.textContent = ''; updateCount(); el.result.focus(); });
+    $('clear-transcript').addEventListener('click', () => { stopSpeaking(); el.result.value = ''; el.output.textContent = ''; updateSpeakButton(); updateCount(); el.result.focus(); });
+    el.speak.addEventListener('click', speakTranslation);
     $('copy-translation').addEventListener('click', async () => { const text = el.output.textContent.trim(); if (!text) return; await navigator.clipboard.writeText(text); setStatus('Copied to clipboard'); });
     $('clear-history').addEventListener('click', () => { saveHistory([]); renderHistory(); });
     document.addEventListener('keydown', (event) => {
         if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') { event.preventDefault(); translateText(); }
     });
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/service-worker.js', { scope: '/' }).catch(() => {});
-    updateLanguages(); updateCount(); renderHistory();
+    if (!speechSynthesisSupported) el.speak.title = 'Speech playback is not supported in this browser';
+    updateLanguages(); updateSpeakButton(); updateCount(); renderHistory();
 });

@@ -65,7 +65,12 @@
                 <article class="text-panel translation-panel">
                     <div class="panel-header">
                         <div><span class="panel-kicker" id="target-language">German</span><h2>Translation</h2></div>
-                        <button class="text-action" id="copy-translation" type="button">Copy</button>
+                        <div class="translation-actions">
+                            <button class="text-action" id="speak-translation" type="button" disabled aria-label="Read translation aloud">
+                                <span class="material-symbols-rounded" aria-hidden="true">volume_up</span><span id="speak-label">Listen</span>
+                            </button>
+                            <button class="text-action" id="copy-translation" type="button">Copy</button>
+                        </div>
                     </div>
                     <div id="translation-result" class="translation-output" aria-live="polite" data-placeholder="Your translation will appear here…">{{ translated_text }}</div>
                     <div class="panel-footer">

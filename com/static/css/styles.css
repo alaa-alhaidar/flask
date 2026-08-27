@@ -45,8 +45,13 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
 .translation-panel { background: linear-gradient(145deg,rgba(255,255,255,.95),rgba(244,242,255,.96)); }
 .panel-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 22px 14px; }
 .panel-header h2 { margin: 0; font-size: 1.35rem; letter-spacing: -.02em; }
+.translation-actions { display: flex; align-items: center; gap: 2px; }
 .text-action { padding: 7px 10px; border-radius: 8px; font-size: .82rem; font-weight: 700; }
 .text-action:hover { background: rgba(101,87,232,.08); }
+.text-action:disabled { color: #aaa6b5; cursor: not-allowed; }
+#speak-translation { display: inline-flex; align-items: center; gap: 4px; }
+#speak-translation .material-symbols-rounded { font-size: 1.1rem; }
+#speak-translation.speaking { color: #d64562; background: rgba(214,69,98,.08); }
 #result, .translation-output { flex: 1; width: 100%; min-height: 250px; padding: 8px 22px 20px; border: 0; color: var(--ink); background: transparent; font-size: clamp(1.05rem,2vw,1.28rem); line-height: 1.65; outline: none; resize: none; }
 .translation-output { white-space: pre-wrap; overflow-y: auto; }
 .translation-output:empty::before { content: attr(data-placeholder); color: #a09cad; }

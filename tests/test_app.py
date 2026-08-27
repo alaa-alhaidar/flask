@@ -22,6 +22,7 @@ class TranslationAppTests(unittest.TestCase):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'VoiceBridge', response.data)
+        self.assertIn(b'speak-translation', response.data)
         self.assertEqual(response.headers['X-Frame-Options'], 'DENY')
         self.assertIn('microphone=(self)', response.headers['Permissions-Policy'])
 

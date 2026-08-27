@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const voiceCommands = [
         { name: 'translate', pattern: /\b(?:translate|translation|uebersetze|uebersetzen)\b|(?:übersetze|übersetzen)/iu },
         { name: 'delete', pattern: /\b(?:delete|clear|leeren|loesche|loeschen)\b|(?:lösche|löschen)/iu },
+        { name: 'speak', pattern: /\b(?:speak|listen|sprechen|vorlesen)\b/iu },
         { name: 'stop', pattern: /\b(?:stop|stopp|anhalten|beenden)\b/iu },
         { name: 'save', pattern: /\b(?:save|download|speichere|speichern)\b/iu },
         { name: 'start', pattern: /\b(?:start|record|starte|aufnahme)\b/iu }
@@ -212,6 +213,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateSpeakButton();
                 updateCount();
                 setStatus(isRecording ? 'Listening…' : 'Ready', isRecording);
+            } else if (command.name === 'speak') {
+                appendTranscript(command.remainingText);
+                if (el.output.textContent.trim()) speakTranslation();
+                else setStatus('Translate text before playback');
             } else if (command.name === 'stop') {
                 stopRecording();
             } else if (command.name === 'save') {
